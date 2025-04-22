@@ -1,0 +1,18 @@
+#langchain-core==0.3.51
+#langchain==0.3.23
+#langchain_community==0.3.21
+#langgraph >= 0.2.28
+#langchain-groq
+#transformers
+#pypdf
+#sentence_transformers
+#langchain_chroma
+#langchain-huggingface
+#faiss-cpu
+#python-dotenv
+#fastapi
+#uvicorn
+#sqlalchemy
+#passlib[bcrypt]
+#python-multipart
+pdfplumber
