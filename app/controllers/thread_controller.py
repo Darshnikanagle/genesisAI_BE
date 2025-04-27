@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from app.db.db import SessionLocal
 from app.db.models.thread_model import Thread
 from app.db.models.thread_message_model import ThreadMessage
@@ -152,7 +153,7 @@ def create_thread(
 @router.get("/")
 def get_threads(list_thread: ListThread = Depends(),  db: Session = Depends(get_db)):
     return {
-        "data": db.query(Thread).filter(Thread.type == list_thread.type, Thread.user_id == list_thread.user_id).all()
+        "data": db.query(Thread).filter(Thread.type == list_thread.type, Thread.user_id == list_thread.user_id).order_by(desc(Thread.created_timestamp)).all()
         }
 
 # Get thread by ID
@@ -195,8 +196,8 @@ def get_thread(thread_id: int, db: Session = Depends(get_db)):
     }
 
 # Update a thread
-@router.put("/{thread_id}", response_model=ThreadResponse)
-def update_thread(thread_id: int, thread_data: ThreadUpdate, db: Session = Depends(get_db)):
+@router.put("/{thread_id}")
+def update_thread(thread_id: int, thread_data: ThreadUpdate = Body(...), db: Session = Depends(get_db)):
     thread = db.query(Thread).filter(Thread.id == thread_id).first()
     if not thread:
         raise HTTPException(status_code=404, detail="Thread not found")

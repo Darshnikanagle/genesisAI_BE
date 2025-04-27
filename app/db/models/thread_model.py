@@ -14,4 +14,4 @@ class Thread(Base):
     modified_timestamp = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
     user = relationship('User', back_populates='threads')
-    messages = relationship('ThreadMessage', back_populates='thread')
+    messages = relationship('ThreadMessage', back_populates='thread', cascade="all, delete-orphan")
