@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from sqlalchemy import desc
 from app.db.db import SessionLocal
 from app.db.models.thread_model import Thread
 from app.db.models.thread_message_model import ThreadMessage
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from app.db.db import SessionLocal
 import os
@@ -47,6 +48,9 @@ class ThreadResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class ThreadCount(BaseModel):
+    user_id: int
 
 # Create a new thread
 @router.post("/")
@@ -221,6 +225,22 @@ def delete_thread(thread_id: int, db: Session = Depends(get_db)):
     db.delete(thread)
     db.commit()
     return {"message": "Thread deleted successfully", "thread_id": thread_id}
+
+
+@router.get("/count-by-type/{user_id}")
+def count_threads_by_type(user_id: int, db: Session = Depends(get_db)) -> Dict[str, int]:
+    # Query to count threads by type for a given user
+    counts = (
+        db.query(Thread.type, func.count(Thread.id))
+        .filter(Thread.user_id == user_id)
+        .group_by(Thread.type)
+        .all()
+    )
+
+    # Format the result as a dictionary
+    result = {thread_type: count for thread_type, count in counts}
+
+    return result
 
 # ====================================== Thread message =======================
 
