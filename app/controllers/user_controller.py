@@ -1,7 +1,7 @@
 
 
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from sqlalchemy.orm import Session
 from app.db.models.user_model import User
 from passlib.context import CryptContext
@@ -40,7 +40,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 # Add new user
 @router.post("/register")
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate = Body(...), db: Session = Depends(get_db)):
     existing_user = get_user_by_email(email = user.email, session = db)
     # existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
@@ -53,7 +53,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     )
 
     create_user(session = db, user = new_user)
-    return {"message": "User registered successfully", "user_id": new_user.id}
+    return {"message": "User registered successfully", "user": new_user}
 
 # Login user
 @router.post("/login")

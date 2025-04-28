@@ -17,7 +17,7 @@ CTL + C to stop or from right side panel, right click terminal and close
 
 
 use sqlite from CMD
-go to db file.. data/genesis_db
+go to db file.. app/data/genesis_db
 sqlite3 genesis.db
 
 Command	Description
