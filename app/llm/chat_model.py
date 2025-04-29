@@ -1,6 +1,6 @@
 from langchain.chat_models import init_chat_model
 import os
-from app.util import llm as model
+from app.util import llm as model, search_tool
 
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -14,13 +14,14 @@ from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from typing import List
+from app.llm.pdf import ask_llm
 
 try:
     prompt_template = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
-                "You are a helpful assistant. Answer all questions to the best of your ability in {language}.",
+                "You are a helpful assistant. Answer all questions to the best of your ability in {language}. If you don't have answer then mention that 'my knowledge cutoff is XYZ'.",
             ),
             MessagesPlaceholder(variable_name="messages"),
         ]
@@ -62,6 +63,11 @@ try:
 except Exception as e:
      print(f"An unexpected error occurred: {e}")
 
+def web_search(query):
+    # Example query
+    result = search_tool.invoke({"query": query})
+    return result
+
 def chat(query: str, thread_id: int, messages: List[str] = None):
     try:
         # messages = [
@@ -91,7 +97,28 @@ def chat(query: str, thread_id: int, messages: List[str] = None):
 
         output = app.invoke({"messages": input_messages, "language": language}, config)
         output["messages"][-1].pretty_print()  # output contains all messages in state
-        return output["messages"][-1].content
+       
+        llm_response = output["messages"][-1].content
+
+        # --- Check if LLM says it doesn't know ---
+        fallback_phrases = [
+            "as of my knowledge",
+            "i don't have information",
+            "only up to",
+            "knowledge cutoff",
+            "unable to provide"
+        ]
+
+        if any(phrase in llm_response.lower() for phrase in fallback_phrases):
+            print("LLM indicated limited knowledge. Performing web search...")
+            web_result = web_search(query)
+
+            return ask_llm(content = web_result, query = query)
+
+        else:
+            return llm_response
+            
+        return llm_response
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")

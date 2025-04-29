@@ -18,7 +18,15 @@ prompt_template = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
-                "You are a helpful and professional assistant. Summarize the given content clearly and concisely, highlighting only the most important points. Avoid unnecessary details.",
+                # "You are a helpful and professional assistant. Summarize the given content clearly and concisely, highlighting only the most important points. Avoid unnecessary details. Use html tags like <br>, <Strong> to format the content.",
+                """Generate a clean and readable summary based on the input content. 
+                - Generate a clean and structured summary.
+                - Each section heading should be wrapped inside a <h4> tag.
+                - Each normal paragraph should be wrapped inside a <p> tag.
+                - Lists should use <ul> and <li> tags.
+                - Do not return <html>, <head>, or <body> tags.
+                - Ensure the HTML is clean and properly closed.
+                """
             ),
             ("user", "{text}"),
         ]
